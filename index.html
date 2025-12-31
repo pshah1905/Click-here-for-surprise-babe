@@ -2,133 +2,127 @@
 <html lang="en">
 <head>
 <meta charset="UTF-8">
-<title>For Uddipana 💗</title>
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
-
-<link href="https://fonts.googleapis.com/css2?family=Dancing+Script:wght@700&family=Quicksand:wght@400;600&family=Playfair+Display:wght@600&display=swap" rel="stylesheet">
+<title>For Uddipana ❤️</title>
 
 <style>
-*{box-sizing:border-box}
+@import url('https://fonts.googleapis.com/css2?family=Playfair+Display:wght@600&family=Quicksand:wght@400;600&display=swap');
+
+*{margin:0;padding:0;box-sizing:border-box}
 
 body{
-margin:0;
-height:100vh;
-overflow:hidden;
+height:100vh;width:100vw;overflow:hidden;
 font-family:'Quicksand',sans-serif;
-background-size:cover;
-background-position:center;
-transition:background-image 1s ease;
-display:flex;
-align-items:center;
-justify-content:center;
 color:white;
 }
 
-.overlay{
-position:fixed;
-inset:0;
-background:rgba(0,0,0,.55);
-z-index:0;
+#bg{
+position:fixed;inset:0;
+background-size:cover;
+background-position:center;
+transition:background-image .8s ease;
+z-index:-2;
 }
 
-.container{
-width:100%;
-max-width:420px;
-padding:16px;
-z-index:1;
+#overlay{
+position:fixed;inset:0;
+background:rgba(0,0,0,.55);
+z-index:-1;
+}
+
+#game{
+height:100vh;width:100vw;
+display:flex;
+align-items:center;
+justify-content:center;
+padding:20px;
 }
 
 .card{
-background:rgba(0,0,0,.35);
-backdrop-filter:blur(14px);
-border-radius:28px;
-padding:24px;
+width:100%;
+max-width:420px;
+background:rgba(255,255,255,.14);
+border-radius:22px;
+padding:22px;
 text-align:center;
-box-shadow:0 25px 70px rgba(0,0,0,.6);
-animation:enter .6s ease;
+backdrop-filter:blur(10px);
+animation:pop .6s ease;
 }
 
-@keyframes enter{
-from{opacity:0;transform:translateY(30px) scale(.95)}
-to{opacity:1;transform:none}
-}
-
-.fadeOut{
-animation:exit .4s forwards;
-}
-@keyframes exit{
-to{opacity:0;transform:translateY(-20px) scale(.95)}
-}
-
-h2{
-font-family:'Playfair Display',serif;
-color:#ffd6ee;
-}
-
-p{
-font-size:16px;
-line-height:1.75;
-}
-
-.name{
-font-family:'Dancing Script',cursive;
-font-size:26px;
-color:#ffe2f3;
+@keyframes pop{
+0%{transform:scale(.7)}
+70%{transform:scale(1.08)}
+100%{transform:scale(1)}
 }
 
 img{
 width:100%;
-border-radius:18px;
-margin-top:14px;
-animation:imgPop .6s ease;
+border-radius:14px;
+margin-bottom:12px;
+animation:slideIn .6s ease;
 }
-@keyframes imgPop{
-from{opacity:0;transform:scale(.9)}
-to{opacity:1;transform:none}
+
+@keyframes slideIn{
+from{transform:translateY(40px);opacity:0}
+to{transform:none;opacity:1}
 }
 
 .row{
 display:flex;
-gap:12px;
+gap:10px;
 overflow-x:auto;
 }
 .row img{flex:0 0 85%}
 
-button{
-background:#ff8fcf;
-border:none;
-border-radius:24px;
-padding:14px 28px;
-font-size:16px;
-color:white;
-margin-top:20px;
-cursor:pointer;
-}
-
-.big-love{
-font-family:'Dancing Script',cursive;
-font-size:54px;
-color:#ffb3e6;
-animation:pulse 1.2s infinite alternate;
-}
-
-@keyframes pulse{
-to{transform:scale(1.08)}
-}
-
-.countdown{
-font-size:42px;
+h1,h2{
 font-family:'Playfair Display',serif;
-margin-top:10px;
+margin-bottom:10px;
 }
 
-/* Fireworks */
-.firework{
-position:fixed;
-width:6px;
-height:6px;
-border-radius:50%;
-pointer-events:none;
+p{
+margin:8px 0;
+font-size:1.05rem;
+line-height:1.5;
+}
+
+button{
+margin-top:14px;
+padding:12px 26px;
+border:none;
+border-radius:999px;
+background:#ff90cf;
+color:#000;
+font-weight:600;
+font-size:1rem;
+cursor:pointer;
+animation:bounce 1.8s infinite;
+}
+
+@keyframes bounce{
+0%,100%{transform:translateY(0)}
+50%{transform:translateY(-6px)}
+}
+
+.shake{animation:shake .4s}
+@keyframes shake{
+0%{transform:translateX(0)}
+25%{transform:translateX(-6px)}
+50%{transform:translateX(6px)}
+75%{transform:translateX(-6px)}
+100%{transform:translateX(0)}
+}
+
+.fireworks::after{
+content:"🎆 🎉 💖 🎆 🎉";
+display:block;
+font-size:2rem;
+margin-top:12px;
+}
+
+.longpress{
+font-size:.85rem;
+opacity:.8;
+margin-top:6px;
 }
 
 audio{display:none}
@@ -137,172 +131,302 @@ audio{display:none}
 
 <body>
 
-<div class="overlay"></div>
+<div id="bg"></div>
+<div id="overlay"></div>
+<div id="game"></div>
 
-<audio id="music" loop autoplay muted>
-  <source src="music.mp3" type="audio/mpeg">
-</audio>
-
-<div class="container">
-  <div id="stage"></div>
-</div>
+<audio id="music" src="music.mp3" autoplay muted loop></audio>
 
 <script>
-const stage = document.getElementById("stage");
-const music = document.getElementById("music");
+const bgImages=["bg1.jpg","bg2.jpg","bg3.jpg","bg4.jpg","bg5.jpg"];
+let bgIndex=0;
 
-let step = 0;
-let bgIndex = 0;
-let musicUnlocked = false;
+const game=document.getElementById("game");
+const bg=document.getElementById("bg");
+const music=document.getElementById("music");
 
-const backgrounds = ["bg1.jpg","bg2.jpg","bg3.jpg","bg4.jpg","bg5.jpg"];
-
-function changeBackground(){
-document.body.style.backgroundImage=`url('${backgrounds[bgIndex]}')`;
-bgIndex=(bgIndex+1)%backgrounds.length;
-}
-
-function show(html){
-changeBackground();
-const old = stage.firstChild;
-if(old){
-old.classList.add("fadeOut");
-setTimeout(()=>old.remove(),350);
-}
-const c=document.createElement("div");
-c.className="card";
-c.innerHTML=html;
-setTimeout(()=>stage.appendChild(c),350);
-}
-
-/* Unlock audio on first user interaction (mobile safe) */
 document.body.addEventListener("click",()=>{
-if(!musicUnlocked){
-music.muted=false;
-music.play().catch(()=>{});
-musicUnlocked=true;
-}
+  music.muted=false;
 },{once:true});
 
-/* Fireworks */
-function fireworks(){
-for(let i=0;i<40;i++){
-const f=document.createElement("div");
-f.className="firework";
-document.body.appendChild(f);
-const x=Math.random()*innerWidth;
-const y=Math.random()*innerHeight;
-f.style.left=x+"px";
-f.style.top=y+"px";
-f.style.background=`hsl(${Math.random()*360},100%,70%)`;
-f.animate([
-{transform:"scale(0)",opacity:1},
-{transform:"scale(18)",opacity:0}
-],{duration:1400});
-setTimeout(()=>f.remove(),1400);
-}
+function changeBg(){
+  bg.style.backgroundImage=`url('${bgImages[bgIndex]}')`;
+  bgIndex=(bgIndex+1)%bgImages.length;
 }
 
-/* Countdown */
-function showCountdown(){
-show(`<h2>New Year Countdown 🎆</h2>
-<div class="countdown" id="timer">--:--</div>`);
+let level=0;
+let secretUnlocked=false;
+let pressTimer=null;
 
-const timer=document.getElementById("timer");
+const levels=[
 
-function update(){
-const now=new Date();
-const target=new Date();
-target.setHours(24,0,0,0);
-
-let diff=target-now;
-if(diff<=0){
-timer.textContent="00:00";
-fireworks();
-return;
+{
+render(){
+return `
+<h1>Happy New Year 2026 ✨</h1>
+<p>Meeting you was completely unexpected…</p>
+<p>And somehow, you became my favourite surprise ❤️</p>
+<p>Uddipana, ready to play a little game?</p>
+<button onclick="next()">Start the game 🎮</button>
+`;
 }
-const m=Math.floor(diff/60000);
-const s=Math.floor((diff%60000)/1000);
-timer.textContent=
-String(m).padStart(2,"0")+":"+String(s).padStart(2,"0");
-requestAnimationFrame(update);
+},
+
+{
+render(){
+return `
+<img src="photo5.jpg">
+<p>This moment… us together 🫶</p>
+<p>I’m genuinely grateful the universe crossed our paths.</p>
+<button onclick="next()">Next</button>
+`;
 }
-update();
+},
+
+{
+render(){
+return `
+<img src="photo1.jpg">
+<p>I told YOU that you'd be shy…</p>
+<p>And look who became shy instead 😭💗</p>
+<p>And you teasing me like that? unfair 😌</p>
+<button onclick="next()">Okay okay 😂</button>
+`;
 }
+},
 
-const scenes=[
-
-`<h2>Happy New Year 2026 ✨</h2>
-<p>
-Meeting you was unexpected…<br>
-yet you became the best thing in my life 💗<br><br>
-<span class="name">Uddipana</span>, this is for you.
-</p>
-<button onclick="next()">Start</button>`,
-
-`<img src="photo5.jpg">
-<p>
-That moment felt calm… warm… right 🤍
-</p>
-<button onclick="next()">Next</button>`,
-
-`<img src="photo1.jpg">
-<p>
-I told you <i>you</i> would be shy…<br>
-and look who actually became shy 😭💗
-</p>
-<button onclick="next()">Next</button>`,
-
-`<div class="row">
-<img src="photo2.jpg"><img src="photo3.jpg">
+{
+render(){
+return `
+<div class="row">
+<img src="photo2.jpg">
+<img src="photo3.jpg">
 </div>
-<p>
-That manga & the note 📖…<br>
-you remembered.
-</p>
-<button onclick="next()">Next</button>`,
+<p>The manga I wanted 📖 and that cute note…</p>
+<p>You remembered. That meant more than you know 🥹</p>
+<button onclick="next()">That was sweet</button>
+`;
+}
+},
 
-`<img src="photo4.jpg">
-<p>
-I didn’t expect this 🎸<br>
-It touched me deeply.
-</p>
-<button onclick="next()">Next</button>`,
+{
+render(){
+return `
+<h2>Quick question 😏</h2>
+<p>Be honest… do you miss me right now?</p>
+<button onclick="shakeCard()">Yes 😳</button>
+<button onclick="prank()">No 😐</button>
+`;
+}
+},
 
-`<h2>One question…</h2>
+{
+render(){
+return `
+<img src="photo4.jpg">
+<p>I honestly didn’t expect this 🎸</p>
+<p>It made me emotional. Truly.</p>
+<button onclick="next()">You surprised me</button>
+`;
+}
+},
+
+{
+render(){
+return `
+<img src="photo6.jpg">
+<p>That brown on you 🤎</p>
+<p>And that smile… uff, dangerous.</p>
+<button onclick="next()">Still staring 👀</button>
+`;
+}
+},
+
+{
+render(){
+return `
+<div class="row">
+<img src="photo7.jpg">
+<img src="photo8.jpg">
+</div>
+<p>Mehendi. Bangles. Orange saree 😭💗</p>
+<p>You KNOW how much I love orange on you.</p>
+<button onclick="next()">Unfairly pretty</button>
+`;
+}
+},
+
+{
+render(){
+return `
+<p>Secret level alert 👀</p>
+<p>Press and hold the button below</p>
+<button id="holdBtn">Hold me 🤍</button>
+<p class="longpress">(don’t tap, hold it)</p>
+`;
+},
+longpress:true
+},
+
+{
+render(){
+return `
+<img src="photo9.jpg">
+<p>You looked like a fairy here ✨</p>
+<p>Soft, calm, unreal.</p>
+<button onclick="next()">I’m speechless</button>
+`;
+}
+},
+
+{
+render(){
+return `
+<img src="photo10.jpg">
+<p>I wish I was there…</p>
+<p>Waking up to your face and cuddling under that blanket 🥺💗</p>
+<button onclick="next()">Come here 🫂</button>
+`;
+}
+},
+
+{
+render(){
+return `
+<img src="photo11.jpg">
+<p>I love when you send trial room pics.</p>
+<p>It makes me feel chosen 🥹</p>
+<button onclick="next()">Pick this one</button>
+`;
+}
+},
+
+{
+render(){
+return `
+<img src="photo12.jpg">
+<p>That purple 💜</p>
+<p>Those earrings… that lipstick…</p>
+<p>I was NOT okay.</p>
+<button onclick="next()">You knew it</button>
+`;
+}
+},
+
+{
+render(){
+return `
+<img src="photo13.jpg">
+<p>This is my favourite dress.</p>
+<p>And that caller profile pic?</p>
+<p>I get distracted every time you call 😂💗</p>
+<button onclick="next()">Your fault</button>
+`;
+}
+},
+
+{
+render(){
+return `
+<p>I blush when my parents tease me about you 🙈</p>
+<p>And I still smile remembering the name my mom gave you…</p>
+<p><b>Pannu</b> 💕</p>
+<button onclick="next()">One last thing</button>
+`;
+}
+},
+
+{
+render(){
+return `
+<h2>Serious question now…</h2>
 <p>Will you be with me forever? 💗</p>
 <button onclick="nope()">No</button>
-<button onclick="yes()">Yes, of course</button>`
+<button onclick="yes()">Yes, of course</button>
+`;
+}
+},
+
+{
+render(){
+return `
+<h1>I LOVE YOU ❤️</h1>
+<button onclick="final()">Next</button>
+`;
+}
+},
+
+{
+render(){
+return `
+<h1>Happy New Year 2026 🎆</h1>
+<p>May this year keep us closer, softer, happier.</p>
+<p>With you, always.</p>
+`;
+},
+final:true
+}
+
 ];
 
-function next(){
-if(step<scenes.length){
-show(scenes[step++]);
+function renderLevel(){
+  changeBg();
+  game.innerHTML="";
+  const card=document.createElement("div");
+  card.className="card";
+  card.innerHTML=levels[level].render();
+  game.appendChild(card);
+
+  if(levels[level].longpress){
+    const btn=document.getElementById("holdBtn");
+    btn.addEventListener("mousedown",startHold);
+    btn.addEventListener("touchstart",startHold);
+    btn.addEventListener("mouseup",cancelHold);
+    btn.addEventListener("touchend",cancelHold);
+  }
 }
+
+function startHold(){
+  pressTimer=setTimeout(()=>{
+    secretUnlocked=true;
+    alert("Okay… that was cute 🥺💗");
+    next();
+  },1200);
+}
+function cancelHold(){
+  clearTimeout(pressTimer);
+}
+
+function next(){
+  level++;
+  renderLevel();
+}
+
+function prank(){
+  const card=document.querySelector(".card");
+  card.classList.add("shake");
+  setTimeout(()=>alert("Liar detected 😤💖"),200);
+}
+
+function shakeCard(){
+  document.querySelector(".card").classList.add("shake");
 }
 
 function nope(){
-show(`<p>
-How dare you 😤💖<br>
-I’m not letting you go.
-</p>
-<button onclick="retry()">Try again</button>`);
-}
-
-function retry(){
-show(`<h2>Answer properly 😌</h2>
-<p>Will you be with me forever? 💗</p>
-<button onclick="nope()">No</button>
-<button onclick="yes()">Yes, of course</button>`);
+  alert("How dare you 😤💖 Try again.");
 }
 
 function yes(){
-fireworks();
-show(`<div class="big-love">I LOVE YOU 💖</div>
-<button onclick="showCountdown()">Next</button>`);
+  level++;
+  renderLevel();
 }
 
-show(scenes[0]);
+function final(){
+  const card=document.querySelector(".card");
+  card.classList.add("fireworks");
+}
+
+renderLevel();
 </script>
 
 </body>
