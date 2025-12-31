@@ -17,7 +17,6 @@ overflow:hidden;
 font-family:'Quicksand',sans-serif;
 background-size:cover;
 background-position:center;
-background-repeat:no-repeat;
 transition:background-image 1s ease;
 display:flex;
 align-items:center;
@@ -41,21 +40,21 @@ z-index:1;
 
 .card{
 background:rgba(0,0,0,.35);
-backdrop-filter:blur(10px);
-border-radius:26px;
+backdrop-filter:blur(12px);
+border-radius:28px;
 padding:24px;
 text-align:center;
 box-shadow:0 25px 70px rgba(0,0,0,.6);
-animation:fadeIn .5s ease;
+animation:enter .6s ease;
 }
 
-.fadeOut{animation:fadeOut .35s forwards}
-
-@keyframes fadeIn{
-from{opacity:0;transform:translateY(20px)}
-to{opacity:1}
+@keyframes enter{
+from{opacity:0;transform:scale(.92) translateY(20px)}
+to{opacity:1;transform:none}
 }
-@keyframes fadeOut{
+
+.fadeOut{animation:exit .4s forwards}
+@keyframes exit{
 to{opacity:0;transform:translateY(-15px)}
 }
 
@@ -85,14 +84,13 @@ margin-top:14px;
 display:flex;
 gap:12px;
 overflow-x:auto;
--webkit-overflow-scrolling:touch;
 }
 .row img{flex:0 0 85%}
 
 button{
 background:#ff8fcf;
 border:none;
-border-radius:22px;
+border-radius:24px;
 padding:14px 28px;
 font-size:16px;
 color:white;
@@ -100,10 +98,25 @@ margin-top:20px;
 cursor:pointer;
 }
 
-.big{
+.big-love{
 font-family:'Dancing Script',cursive;
-font-size:46px;
-color:#ffd6ee;
+font-size:54px;
+color:#ffb3e6;
+animation:pulse 1.2s infinite alternate;
+}
+
+@keyframes pulse{
+to{transform:scale(1.08)}
+}
+
+/* FIREWORKS */
+.firework{
+position:fixed;
+width:6px;
+height:6px;
+border-radius:50%;
+background:transparent;
+pointer-events:none;
 }
 
 audio{display:none}
@@ -129,18 +142,42 @@ const music = document.getElementById("music");
 let step = 0;
 let bgIndex = 0;
 let musicStarted = false;
+let asking = false;
 
-const backgrounds = [
-  "bg1.jpg",
-  "bg2.jpg",
-  "bg3.jpg",
-  "bg4.jpg",
-  "bg5.jpg"
-];
+const backgrounds = ["bg1.jpg","bg2.jpg","bg3.jpg","bg4.jpg","bg5.jpg"];
 
 function changeBackground(){
-  document.body.style.backgroundImage = `url('${backgrounds[bgIndex]}')`;
-  bgIndex = (bgIndex + 1) % backgrounds.length;
+document.body.style.backgroundImage=`url('${backgrounds[bgIndex]}')`;
+bgIndex=(bgIndex+1)%backgrounds.length;
+}
+
+function show(html){
+changeBackground();
+const old=stage.firstChild;
+if(old){old.classList.add("fadeOut");setTimeout(()=>old.remove(),350);}
+const c=document.createElement("div");
+c.className="card";
+c.innerHTML=html;
+setTimeout(()=>stage.appendChild(c),350);
+}
+
+/* FIREWORKS */
+function fireworks(){
+for(let i=0;i<35;i++){
+const f=document.createElement("div");
+f.className="firework";
+document.body.appendChild(f);
+const x=Math.random()*window.innerWidth;
+const y=Math.random()*window.innerHeight;
+f.style.left=x+"px";
+f.style.top=y+"px";
+f.style.background=`hsl(${Math.random()*360},100%,70%)`;
+f.animate([
+{transform:"scale(0)",opacity:1},
+{transform:"scale(15)",opacity:0}
+],{duration:1200});
+setTimeout(()=>f.remove(),1200);
+}
 }
 
 const scenes = [
@@ -148,92 +185,82 @@ const scenes = [
 `<h2>Happy New Year 2026 ✨</h2>
 <p>
 Meeting you was completely unexpected…<br>
-I never thought I’d fall for someone again.<br><br>
-And then you happened, <span class="name">Uddipana</span> 💗<br>
-The best surprise of my life.
+And somehow, you became the best thing that happened to me 💗<br><br>
+<span class="name">Uddipana</span>, this is for you.
 </p>
 <button onclick="start()">I made something for you</button>`,
 
 `<img src="photo5.jpg">
 <p>
-Seeing you that day felt so calm and warm 🤍<br>
-I’m genuinely grateful I met you.<br>
-That moment stays with me.
+That day felt calm… warm… right 🤍<br>
+I’m really grateful I met you.
 </p>
 <button onclick="next()">Next</button>`,
 
 `<img src="photo1.jpg">
 <p>
-I was telling you “you’ll be shy”…<br>
+I told you <i>you</i> would be shy…<br>
 and look who actually became shy 😭💗<br>
-And you teasing me like that — unfair 😌
+And you teasing me — unfair 😌
 </p>
 <button onclick="next()">Next</button>`,
 
 `<div class="row">
-<img src="photo2.jpg">
-<img src="photo3.jpg">
+<img src="photo2.jpg"><img src="photo3.jpg">
 </div>
 <p>
-The manga I wanted… and that cute note 🥺📖<br>
-You remembered.<br>
-That made me really happy.
+The manga I wanted 📖 and that cute note…<br>
+You remembered. That meant a lot.
 </p>
 <button onclick="next()">Next</button>`,
 
 `<img src="photo4.jpg">
 <p>
-I honestly didn’t expect this 🎸<br>
-It made me emotional.<br>
-You put effort… and I felt it.
+I didn’t expect this at all 🎸<br>
+It made me emotional… truly.
 </p>
 <button onclick="next()">Next</button>`,
 
 `<img src="photo6.jpg">
 <p>
 That brown suits you so well 🤎<br>
-And that smile… uff.<br>
-Lovely, always.
+And that smile… uff, lovely as always.
 </p>
 <button onclick="next()">Next</button>`,
 
 `<div class="row">
-<img src="photo7.jpg">
-<img src="photo8.jpg">
+<img src="photo7.jpg"><img src="photo8.jpg">
 </div>
 <p>
-Mehendi. Bangles. Orange saree 😭💗<br>
-You know how much I love orange on you.<br>
-You look unreal in traditional.
+Mehendi, bangles, orange saree 😭💗<br>
+You know how much I love orange on you.
 </p>
 <button onclick="next()">Next</button>`,
 
 `<img src="photo9.jpg">
 <p>
 You looked like a fairy here 🧚‍♀️✨<br>
-Soft, elegant, beautiful.
+Soft, elegant, unreal.
 </p>
 <button onclick="next()">Next</button>`,
 
 `<img src="photo10.jpg">
 <p>
 I wish I was there…<br>
-Waking up to your face,<br>
-and cuddling under that blanket 🥺💗
+Waking up to you and cuddling under that blanket 🥺💗
 </p>
 <button onclick="next()">Next</button>`,
 
 `<img src="photo11.jpg">
 <p>
-I love when you send me trial room pics 😌<br>
-It makes me feel special… included.
+I love when you send trial room pics 😌<br>
+It makes me feel special.
 </p>
 <button onclick="next()">Next</button>`,
 
 `<img src="photo12.jpg">
 <p>
-That purple 💜<br>
-Those earrings… that lipstick…<br>
+That purple 💜… the earrings… the lipstick…<br>
 I couldn’t stop staring.
 </p>
 <button onclick="next()">Next</button>`,
@@ -241,42 +268,24 @@ I couldn’t stop staring.
 `<img src="photo13.jpg">
 <p>
 My favourite dress 💗<br>
-And when you set this as your caller profile…<br>
-That’s why I get distracted when you call 😂
+That caller profile pic still distracts me 😂
 </p>
 <button onclick="next()">Next</button>`,
 
 `<p>
 I blush when my parents tease me about you 🙈<br>
-And I still smile remembering the name my mom gave you…<br>
-<b>Pannu</b> 💕
+And I still smile at the name my mom gave you — <b>Pannu</b> 💕
 </p>
 <button onclick="next()">Next</button>`,
 
-`<h2>One last thing…</h2>
+`<h2>One last question…</h2>
 <p>Will you be with me forever? 💗</p>
 <button onclick="nope()">No</button>
 <button onclick="yes()">Yes, of course</button>`
 ];
 
-function show(html){
-changeBackground();
-const old = stage.firstChild;
-if(old){
-old.classList.add("fadeOut");
-setTimeout(()=>old.remove(),300);
-}
-const c = document.createElement("div");
-c.className = "card";
-c.innerHTML = html;
-setTimeout(()=>stage.appendChild(c),300);
-}
-
 function start(){
-if(!musicStarted){
-music.play().catch(()=>{});
-musicStarted=true;
-}
+if(!musicStarted){music.play().catch(()=>{});musicStarted=true;}
 next();
 }
 
@@ -287,12 +296,24 @@ show(scenes[step++]);
 }
 
 function nope(){
-show(`<p>Nice try 😌💗<br>Try again.</p>
-<button onclick="next()">Okay okay</button>`);
+asking=true;
+show(`<p>
+How dare you 😤💖<br>
+I’m not gonna leave you alone that easily.
+</p>
+<button onclick="retry()">Try again</button>`);
+}
+
+function retry(){
+show(`<h2>Answer carefully 😌</h2>
+<p>Will you be with me forever? 💗</p>
+<button onclick="nope()">No</button>
+<button onclick="yes()">Yes, of course</button>`);
 }
 
 function yes(){
-show(`<div class="big">I LOVE YOU 💖</div>
+fireworks();
+show(`<div class="big-love">I LOVE YOU 💖</div>
 <p>
 Happy New Year 2026 ✨<br>
 This is just the beginning, <span class="name">Uddipana</span>.
