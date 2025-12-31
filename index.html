@@ -40,7 +40,7 @@ z-index:1;
 
 .card{
 background:rgba(0,0,0,.35);
-backdrop-filter:blur(12px);
+backdrop-filter:blur(14px);
 border-radius:28px;
 padding:24px;
 text-align:center;
@@ -49,13 +49,15 @@ animation:enter .6s ease;
 }
 
 @keyframes enter{
-from{opacity:0;transform:scale(.92) translateY(20px)}
+from{opacity:0;transform:translateY(30px) scale(.95)}
 to{opacity:1;transform:none}
 }
 
-.fadeOut{animation:exit .4s forwards}
+.fadeOut{
+animation:exit .4s forwards;
+}
 @keyframes exit{
-to{opacity:0;transform:translateY(-15px)}
+to{opacity:0;transform:translateY(-20px) scale(.95)}
 }
 
 h2{
@@ -78,6 +80,11 @@ img{
 width:100%;
 border-radius:18px;
 margin-top:14px;
+animation:imgPop .6s ease;
+}
+@keyframes imgPop{
+from{opacity:0;transform:scale(.9)}
+to{opacity:1;transform:none}
 }
 
 .row{
@@ -109,13 +116,18 @@ animation:pulse 1.2s infinite alternate;
 to{transform:scale(1.08)}
 }
 
-/* FIREWORKS */
+.countdown{
+font-size:42px;
+font-family:'Playfair Display',serif;
+margin-top:10px;
+}
+
+/* Fireworks */
 .firework{
 position:fixed;
 width:6px;
 height:6px;
 border-radius:50%;
-background:transparent;
 pointer-events:none;
 }
 
@@ -127,7 +139,7 @@ audio{display:none}
 
 <div class="overlay"></div>
 
-<audio id="music" loop>
+<audio id="music" loop autoplay muted>
   <source src="music.mp3" type="audio/mpeg">
 </audio>
 
@@ -141,8 +153,7 @@ const music = document.getElementById("music");
 
 let step = 0;
 let bgIndex = 0;
-let musicStarted = false;
-let asking = false;
+let musicUnlocked = false;
 
 const backgrounds = ["bg1.jpg","bg2.jpg","bg3.jpg","bg4.jpg","bg5.jpg"];
 
@@ -153,55 +164,92 @@ bgIndex=(bgIndex+1)%backgrounds.length;
 
 function show(html){
 changeBackground();
-const old=stage.firstChild;
-if(old){old.classList.add("fadeOut");setTimeout(()=>old.remove(),350);}
+const old = stage.firstChild;
+if(old){
+old.classList.add("fadeOut");
+setTimeout(()=>old.remove(),350);
+}
 const c=document.createElement("div");
 c.className="card";
 c.innerHTML=html;
 setTimeout(()=>stage.appendChild(c),350);
 }
 
-/* FIREWORKS */
+/* Unlock audio on first user interaction (mobile safe) */
+document.body.addEventListener("click",()=>{
+if(!musicUnlocked){
+music.muted=false;
+music.play().catch(()=>{});
+musicUnlocked=true;
+}
+},{once:true});
+
+/* Fireworks */
 function fireworks(){
-for(let i=0;i<35;i++){
+for(let i=0;i<40;i++){
 const f=document.createElement("div");
 f.className="firework";
 document.body.appendChild(f);
-const x=Math.random()*window.innerWidth;
-const y=Math.random()*window.innerHeight;
+const x=Math.random()*innerWidth;
+const y=Math.random()*innerHeight;
 f.style.left=x+"px";
 f.style.top=y+"px";
 f.style.background=`hsl(${Math.random()*360},100%,70%)`;
 f.animate([
 {transform:"scale(0)",opacity:1},
-{transform:"scale(15)",opacity:0}
-],{duration:1200});
-setTimeout(()=>f.remove(),1200);
+{transform:"scale(18)",opacity:0}
+],{duration:1400});
+setTimeout(()=>f.remove(),1400);
 }
 }
 
-const scenes = [
+/* Countdown */
+function showCountdown(){
+show(`<h2>New Year Countdown 🎆</h2>
+<div class="countdown" id="timer">--:--</div>`);
+
+const timer=document.getElementById("timer");
+
+function update(){
+const now=new Date();
+const target=new Date();
+target.setHours(24,0,0,0);
+
+let diff=target-now;
+if(diff<=0){
+timer.textContent="00:00";
+fireworks();
+return;
+}
+const m=Math.floor(diff/60000);
+const s=Math.floor((diff%60000)/1000);
+timer.textContent=
+String(m).padStart(2,"0")+":"+String(s).padStart(2,"0");
+requestAnimationFrame(update);
+}
+update();
+}
+
+const scenes=[
 
 `<h2>Happy New Year 2026 ✨</h2>
 <p>
-Meeting you was completely unexpected…<br>
-And somehow, you became the best thing that happened to me 💗<br><br>
+Meeting you was unexpected…<br>
+yet you became the best thing in my life 💗<br><br>
 <span class="name">Uddipana</span>, this is for you.
 </p>
-<button onclick="start()">I made something for you</button>`,
+<button onclick="next()">Start</button>`,
 
 `<img src="photo5.jpg">
 <p>
-That day felt calm… warm… right 🤍<br>
-I’m really grateful I met you.
+That moment felt calm… warm… right 🤍
 </p>
 <button onclick="next()">Next</button>`,
 
 `<img src="photo1.jpg">
 <p>
 I told you <i>you</i> would be shy…<br>
-and look who actually became shy 😭💗<br>
-And you teasing me — unfair 😌
+and look who actually became shy 😭💗
 </p>
 <button onclick="next()">Next</button>`,
 
@@ -209,103 +257,40 @@ And you teasing me — unfair 😌
 <img src="photo2.jpg"><img src="photo3.jpg">
 </div>
 <p>
-The manga I wanted 📖 and that cute note…<br>
-You remembered. That meant a lot.
+That manga & the note 📖…<br>
+you remembered.
 </p>
 <button onclick="next()">Next</button>`,
 
 `<img src="photo4.jpg">
 <p>
-I didn’t expect this at all 🎸<br>
-It made me emotional… truly.
+I didn’t expect this 🎸<br>
+It touched me deeply.
 </p>
 <button onclick="next()">Next</button>`,
 
-`<img src="photo6.jpg">
-<p>
-That brown suits you so well 🤎<br>
-And that smile… uff, lovely as always.
-</p>
-<button onclick="next()">Next</button>`,
-
-`<div class="row">
-<img src="photo7.jpg"><img src="photo8.jpg">
-</div>
-<p>
-Mehendi, bangles, orange saree 😭💗<br>
-You know how much I love orange on you.
-</p>
-<button onclick="next()">Next</button>`,
-
-`<img src="photo9.jpg">
-<p>
-You looked like a fairy here 🧚‍♀️✨<br>
-Soft, elegant, unreal.
-</p>
-<button onclick="next()">Next</button>`,
-
-`<img src="photo10.jpg">
-<p>
-I wish I was there…<br>
-Waking up to you and cuddling under that blanket 🥺💗
-</p>
-<button onclick="next()">Next</button>`,
-
-`<img src="photo11.jpg">
-<p>
-I love when you send trial room pics 😌<br>
-It makes me feel special.
-</p>
-<button onclick="next()">Next</button>`,
-
-`<img src="photo12.jpg">
-<p>
-That purple 💜… the earrings… the lipstick…<br>
-I couldn’t stop staring.
-</p>
-<button onclick="next()">Next</button>`,
-
-`<img src="photo13.jpg">
-<p>
-My favourite dress 💗<br>
-That caller profile pic still distracts me 😂
-</p>
-<button onclick="next()">Next</button>`,
-
-`<p>
-I blush when my parents tease me about you 🙈<br>
-And I still smile at the name my mom gave you — <b>Pannu</b> 💕
-</p>
-<button onclick="next()">Next</button>`,
-
-`<h2>One last question…</h2>
+`<h2>One question…</h2>
 <p>Will you be with me forever? 💗</p>
 <button onclick="nope()">No</button>
 <button onclick="yes()">Yes, of course</button>`
 ];
 
-function start(){
-if(!musicStarted){music.play().catch(()=>{});musicStarted=true;}
-next();
-}
-
 function next(){
-if(step < scenes.length){
+if(step<scenes.length){
 show(scenes[step++]);
 }
 }
 
 function nope(){
-asking=true;
 show(`<p>
 How dare you 😤💖<br>
-I’m not gonna leave you alone that easily.
+I’m not letting you go.
 </p>
 <button onclick="retry()">Try again</button>`);
 }
 
 function retry(){
-show(`<h2>Answer carefully 😌</h2>
+show(`<h2>Answer properly 😌</h2>
 <p>Will you be with me forever? 💗</p>
 <button onclick="nope()">No</button>
 <button onclick="yes()">Yes, of course</button>`);
@@ -314,10 +299,7 @@ show(`<h2>Answer carefully 😌</h2>
 function yes(){
 fireworks();
 show(`<div class="big-love">I LOVE YOU 💖</div>
-<p>
-Happy New Year 2026 ✨<br>
-This is just the beginning, <span class="name">Uddipana</span>.
-</p>`);
+<button onclick="showCountdown()">Next</button>`);
 }
 
 show(scenes[0]);
